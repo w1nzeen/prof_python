@@ -1,5 +1,8 @@
 from dataclasses import dataclass
 
+TECH_TYPES: tuple[str, ...] = ("Laptop", "Smartphone", "Tablet", "Monitor", "Printer")
+
+
 @dataclass
 class Tech:
     inventory_number: str

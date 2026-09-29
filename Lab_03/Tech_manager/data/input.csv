@@ -1,0 +1,21 @@
+inventory_number,type,manufacturer,model,cost
+001,Laptop,Dell,XPS 13,999.99
+002,Smartphone,Apple,iPhone 13,799.99
+003,Tablet,Samsung,Galaxy Tab S7,649.99
+004,Laptop,HP,Spectre x360,1199.99
+005,Smartphone,Google,Pixel 6,599.99
+006,Laptop,Dell,Latitude 5440,1149.00
+007,Monitor,Dell,U2723QE,519.50
+008,Laptop,Lenovo,ThinkPad X1,1899.00
+009,Smartphone,Samsung,Galaxy S23,849.00
+010,Tablet,Apple,iPad Air,599.00
+011,Monitor,HP,E24 G5,189.90
+012,Smartphone,Google,Pixel 7,649.00
+013,laptop,Asus,Zenbook 14,1099.50
+014,Monitor,LG,UltraFine 5K,error
+
+015,Tablet,Lenovo,,349.00
+016,Laptop,HP,Envy 15,-10
+017,Monitor,Dell
+018,Laptop,Acer,Swift 3,inf
+019, Smartphone ,Xiaomi,Redmi Note 12,  259.90 

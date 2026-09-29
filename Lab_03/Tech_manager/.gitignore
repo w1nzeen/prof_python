@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.idea/
+.vscode/
+dist/
+build/
+*.egg-info/
+.env
+summary.json
+export_*.csv
+data/generated/

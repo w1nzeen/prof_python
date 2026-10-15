@@ -1,6 +1,8 @@
 """Application entry point: demo mode and console menu."""
 
 import argparse
+import logging
+from pathlib import Path
 
 from equipment_manager import analytics, processors
 from equipment_manager.benchmark import print_benchmark, run_benchmark
@@ -16,6 +18,15 @@ from equipment_manager.services import (
     find_device,
     find_most_expensive,
     search_devices,
+)
+from equipment_manager.streaming.demo import run_stream_demo
+from equipment_manager.streaming.experiment import (
+    DEFAULT_SIZES,
+    generate_csv,
+    print_early_termination,
+    print_experiment,
+    run_early_termination,
+    run_experiment,
 )
 
 
@@ -249,6 +260,20 @@ def run_benchmark_report() -> None:
     print_benchmark(run_benchmark())
 
 
+def run_generate(count: int) -> None:
+    path = Path("data/large.csv")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    generate_csv(path, count)
+    print(f"Created {path} with {count:,} records.")
+
+
+def run_stream_experiment(sizes: tuple[int, ...]) -> None:
+    print("Eager vs lazy processing (time and peak memory)")
+    print_experiment(run_experiment(sizes))
+    print()
+    print_early_termination(run_early_termination())
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="equipment-manager")
     parser.add_argument(
@@ -260,9 +285,41 @@ def main() -> None:
     parser.add_argument(
         "--benchmark", action="store_true", help="list vs dict benchmark"
     )
+    parser.add_argument(
+        "--stream", action="store_true", help="laboratory work 3 demo"
+    )
+    parser.add_argument(
+        "--path", type=Path, default=Path("data/input.csv"),
+        help="input CSV file for --stream",
+    )
+    parser.add_argument(
+        "--generate", type=int, metavar="N",
+        help="create data/large.csv with N records",
+    )
+    parser.add_argument(
+        "--experiment", action="store_true",
+        help="eager vs lazy experiment (laboratory work 3)",
+    )
+    parser.add_argument(
+        "--sizes", type=int, nargs="+", default=list(DEFAULT_SIZES),
+        help="dataset sizes for --experiment",
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="store_true",
+        help="log pipeline stages",
+    )
     args = parser.parse_args()
 
-    if args.analysis:
+    if args.verbose:
+        logging.basicConfig(level=logging.DEBUG, format="%(name)s: %(message)s")
+
+    if args.stream:
+        run_stream_demo(args.path, log_stages=args.verbose)
+    elif args.generate is not None:
+        run_generate(args.generate)
+    elif args.experiment:
+        run_stream_experiment(tuple(args.sizes))
+    elif args.analysis:
         run_analysis(list(DEVICES))
     elif args.benchmark:
         run_benchmark_report()

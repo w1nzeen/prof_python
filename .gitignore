@@ -10,3 +10,5 @@ dist/
 build/
 *.egg-info/
 .env
+data/large.csv
+data/generated/

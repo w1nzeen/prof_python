@@ -56,6 +56,17 @@ Demo mode of laboratory work 1 (no input required):
 python -m equipment_manager.main --demo
 ```
 
+Laboratory work 3 (streaming pipeline, run from the project root):
+
+```
+python -m equipment_manager.main --stream              # demo on data/input.csv
+python -m equipment_manager.main --stream -v           # + log of pipeline stages
+python -m equipment_manager.main --generate 100000     # create data/large.csv
+python -m equipment_manager.main --stream --path data/large.csv
+python -m equipment_manager.main --experiment          # eager vs lazy (takes ~1-2 min)
+python -m equipment_manager.main --experiment --sizes 10000 100000
+```
+
 Laboratory work 2 (data processing) and benchmark:
 
 ```
@@ -91,6 +102,9 @@ src/equipment_manager/analytics.py   Aggregation, sorting, closures (lab 2)
 src/equipment_manager/decorators.py  measure_time, record_operation (lab 2)
 src/equipment_manager/benchmark.py   list vs dict benchmark (lab 2)
 src/equipment_manager/main.py        Application entry point
+src/equipment_manager/streaming/     Streaming pipeline (lab 3)
+data/input.csv                       Sample input for lab 3
+reports/                             Reports in .docx format
 tests/                               Unit tests
 ```
 
@@ -138,6 +152,36 @@ Counter statistics, deque history, benchmark, pipeline (`process_pipeline`).
 The list search time grows about 10 times when the data grows 10 times
 (O(n)), while the dict search time stays almost constant (O(1)).
 Results depend on the computer; run `--benchmark` to get your own numbers.
+
+## Laboratory work 3: iterators, generators, streaming
+
+Input format: `inventory_number,type,manufacturer,model,cost`.
+
+Pipeline: `read_lines` -> `clean_lines` -> `parse_csv_rows` -> `validate_devices`
+-> `normalize_devices` -> filters -> consumer (aggregation, batching, search).
+
+| Module (`streaming/`) | Content |
+| --- | --- |
+| `iterators.py` | custom iterable/iterator classes, infinite generator, recursive `flatten` (`yield from`) |
+| `readers.py`, `parsers.py` | streaming reading, cleaning, CSV parsing |
+| `filters.py` | validation with invalid counter, filters, lazy search (`find_first`) |
+| `transformations.py` | normalization, `accumulate`, `pairwise`, `tee` |
+| `batches.py` | `batched` (`islice`), `dynamic_batches` |
+| `analytics.py` | single-pass statistics, `Counter`, `groupby` |
+| `pipeline.py` | assembling the pipeline, `chain` for several files, stage logging |
+| `experiment.py` | data generator, eager vs lazy time/memory, early termination |
+
+Experiment results (Python 3.12, Linux; your numbers will differ):
+
+| Records | Eager, s | Lazy, s | Eager peak, MB | Lazy peak, MB |
+| --- | --- | --- | --- | --- |
+| 10 000 | 0.096 | 0.090 | 8.26 | 0.04 |
+| 100 000 | 1.083 | 0.830 | 82.39 | 0.05 |
+| 500 000 | 5.286 | 4.307 | 412.63 | 0.05 |
+
+Lazy processing keeps memory almost constant and returns the first record
+immediately; the difference in total time is small, so a generator is not
+"always faster", its main advantage is memory and early termination.
 
 ## Author
 

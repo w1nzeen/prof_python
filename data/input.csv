@@ -1,0 +1,17 @@
+inventory_number,type,manufacturer,model,cost
+PC-001,Laptop,Lenovo,ThinkPad E14,28500.00
+PC-002,Laptop,Dell,Latitude 5440,36900.00
+PC-003,Monitor,Dell,U2723QE,17200.50
+PC-004,Printer,HP,LaserJet M111w,4800.00
+PC-005,Laptop,Lenovo,IdeaPad 3,21300.00
+PC-006,Router,TP-Link,Archer AX55,error
+PC-007,Monitor,Asus,ProArt PA278,14900.00
+
+PC-008,Server,HP,ProLiant DL20,74500.00
+PC-009,printer,HP,OfficeJet Pro 9010,8700.00
+PC-010,Laptop,Asus,Vivobook 15,19800.00
+PC-011,Monitor,Lenovo,,6900.00
+PC-012,Keyboard,Dell,KB216,-450.00
+pc-013,Router,TP-Link,Archer AX55,3100.00
+PC-014,Laptop,Lenovo,Legion 5
+PC-015,Laptop,Dell,XPS 13,52300.00

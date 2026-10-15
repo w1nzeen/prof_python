@@ -56,6 +56,16 @@ Demo mode of laboratory work 1 (no input required):
 python -m equipment_manager.main --demo
 ```
 
+Laboratory work 4 (typed OOP model, static type checking):
+
+```
+python -m equipment_manager.main --oop               # demo scenario
+python -m equipment_manager.main --oop-experiments   # DI and inheritance vs composition
+python scripts/check.py                              # ruff + mypy --strict + pytest
+mypy experiments/type_errors.py                      # 3 intentional type errors
+mypy experiments/type_errors_fixed.py                # the same code, corrected
+```
+
 Laboratory work 3 (streaming pipeline, run from the project root):
 
 ```
@@ -103,6 +113,9 @@ src/equipment_manager/decorators.py  measure_time, record_operation (lab 2)
 src/equipment_manager/benchmark.py   list vs dict benchmark (lab 2)
 src/equipment_manager/main.py        Application entry point
 src/equipment_manager/streaming/     Streaming pipeline (lab 3)
+src/equipment_manager/domain/        Typed OOP model, DI, services (lab 4)
+experiments/                         Type-checking experiment (lab 4)
+scripts/check.py                     CI-like check: ruff, mypy, pytest
 data/input.csv                       Sample input for lab 3
 reports/                             Reports in .docx format
 tests/                               Unit tests
@@ -182,6 +195,24 @@ Experiment results (Python 3.12, Linux; your numbers will differ):
 Lazy processing keeps memory almost constant and returns the first record
 immediately; the difference in total time is small, so a generator is not
 "always faster", its main advantage is memory and early termination.
+
+## Laboratory work 4: professional OOP and type system
+
+Domain: computer equipment accounting (variant 13).
+
+| Topic | Implementation (`domain/`) |
+| --- | --- |
+| Entities, inheritance | `Device` -> `Computer`, `Printer`; `kind` as class-level attribute |
+| Composition | `Device` has `Manufacturer`, `Money`, `InventoryNumber`; services get dependencies |
+| Value objects | frozen, slotted dataclasses `Money`, `InventoryNumber`, `Manufacturer` |
+| Encapsulation, property | `Device.cost` (setter), read-only `inventory_number` |
+| ABC / Protocol | `MaintenancePolicy`; `Repository[K, T]`, `Notifier`, `ReportFormatter`, `Serializable` |
+| Dunder methods | `InventoryRegistry` (`__len__`, `__iter__`, `__contains__`, `__getitem__`), `Money` (`__add__`, `__lt__`) |
+| Generics | `InMemoryRepository(Generic[K, T])`, bound `TypeVar` in `by_type()` |
+| TypedDict | `ComputerPayload`, `PrinterPayload`, `GenericPayload` |
+| Services, DI | `MaintenanceService`, `ReportService`, `build_container()` |
+
+Static typing: `mypy --strict` (see `[tool.mypy]` in `pyproject.toml`).
 
 ## Author
 

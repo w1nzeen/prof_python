@@ -24,3 +24,13 @@ line-length = 88
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.setuptools.package-data]
+equipment_manager = ["py.typed"]
+
+[tool.mypy]
+mypy_path = "src"
+python_version = "3.11"
+strict = true
+warn_unused_ignores = true
+warn_return_any = true

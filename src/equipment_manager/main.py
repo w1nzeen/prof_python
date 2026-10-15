@@ -8,6 +8,7 @@ from equipment_manager import analytics, processors
 from equipment_manager.benchmark import print_benchmark, run_benchmark
 from equipment_manager.data import DEVICES
 from equipment_manager.decorators import OPERATION_HISTORY
+from equipment_manager.domain.demo import run_oop_demo, run_oop_experiments
 from equipment_manager.exceptions import EquipmentError
 from equipment_manager.models import Device
 from equipment_manager.services import (
@@ -289,6 +290,13 @@ def main() -> None:
         "--stream", action="store_true", help="laboratory work 3 demo"
     )
     parser.add_argument(
+        "--oop", action="store_true", help="laboratory work 4 demo"
+    )
+    parser.add_argument(
+        "--oop-experiments", action="store_true",
+        help="DI and inheritance vs composition experiments (lab 4)",
+    )
+    parser.add_argument(
         "--path", type=Path, default=Path("data/input.csv"),
         help="input CSV file for --stream",
     )
@@ -313,7 +321,11 @@ def main() -> None:
     if args.verbose:
         logging.basicConfig(level=logging.DEBUG, format="%(name)s: %(message)s")
 
-    if args.stream:
+    if args.oop:
+        run_oop_demo()
+    elif args.oop_experiments:
+        run_oop_experiments()
+    elif args.stream:
         run_stream_demo(args.path, log_stages=args.verbose)
     elif args.generate is not None:
         run_generate(args.generate)

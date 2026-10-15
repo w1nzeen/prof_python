@@ -1,6 +1,7 @@
 """Console demonstration of laboratory work 3."""
 
 import sys
+from collections.abc import Iterable
 from contextlib import closing
 from itertools import islice
 from pathlib import Path
@@ -32,7 +33,7 @@ def print_iterator_demo() -> None:
     print("1. Iterator protocol")
     print("-" * 60)
 
-    values = [10, 20, 30]
+    values: Iterable[int] = [10, 20, 30]
     iterator = iter(values)
     print("next():", next(iterator), next(iterator), next(iterator))
 

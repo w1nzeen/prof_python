@@ -4,20 +4,25 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "equipment-manager"
-version = "0.3.0"
+version = "0.5.0"
 description = "Computer equipment accounting laboratory project"
 readme = "README.md"
 requires-python = ">=3.11"
+dependencies = [
+    "pyyaml>=6.0",
+]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
     "ruff>=0.5",
     "mypy>=1.10",
+    "types-PyYAML>=6.0",
 ]
 
 [project.scripts]
 equipment-manager = "equipment_manager.main:main"
+equipment-importer = "equipment_manager.importer.main:main"
 
 [tool.ruff]
 line-length = 88

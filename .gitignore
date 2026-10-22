@@ -12,3 +12,7 @@ build/
 .env
 data/large.csv
 data/generated/
+logs/
+output/
+*.tmp
+*.bak

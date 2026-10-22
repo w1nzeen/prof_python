@@ -56,6 +56,14 @@ Demo mode of laboratory work 1 (no input required):
 python -m equipment_manager.main --demo
 ```
 
+Laboratory work 5 (reliable import/export, configuration):
+
+```
+python -m equipment_manager.importer.main                               # uses config.yaml
+IMPORTER_SKIP_INVALID=false python -m equipment_manager.importer.main   # strict mode
+python -m equipment_manager.importer.experiments [strict|streaming|chaining|atomic|config]
+```
+
 Laboratory work 4 (typed OOP model, static type checking):
 
 ```
@@ -114,6 +122,8 @@ src/equipment_manager/benchmark.py   list vs dict benchmark (lab 2)
 src/equipment_manager/main.py        Application entry point
 src/equipment_manager/streaming/     Streaming pipeline (lab 3)
 src/equipment_manager/domain/        Typed OOP model, DI, services (lab 4)
+src/equipment_manager/importer/      Reliable import/export, YAML config (lab 5)
+config.yaml                          Importer configuration (lab 5)
 experiments/                         Type-checking experiment (lab 4)
 scripts/check.py                     CI-like check: ruff, mypy, pytest
 data/input.csv                       Sample input for lab 3
@@ -213,6 +223,12 @@ Domain: computer equipment accounting (variant 13).
 | Services, DI | `MaintenanceService`, `ReportService`, `build_container()` |
 
 Static typing: `mypy --strict` (see `[tool.mypy]` in `pyproject.toml`).
+
+## Laboratory work 5: files, errors, serialization
+
+CSV (streaming) -> validation -> strict/tolerant policy -> JSON export with
+atomic write; YAML configuration with fail-fast validation; error CSV and
+rotating application log; own exception hierarchy with exception chaining.
 
 ## Author
 

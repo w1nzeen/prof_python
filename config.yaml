@@ -1,0 +1,26 @@
+# Configuration of the equipment importer (laboratory work 5, variant 13).
+# Relative paths are resolved relative to this file.
+version: 1
+
+input:
+  path: data/equipment.csv
+  format: auto            # auto | csv | json | jsonl
+
+output:
+  path: output/equipment.json
+  format: auto            # auto | json | jsonl
+  backup_existing: true   # keep the previous output as *.bak
+  summary_path: output/summary.json
+
+processing:
+  skip_invalid: true      # true = tolerant mode, false = strict mode
+  minimum_value: 0        # records cheaper than this are filtered out
+  allowed_types: [Laptop, Monitor, Printer, Router, Server, Keyboard]
+  allowed_manufacturers: [Lenovo, Dell, HP, Asus, Acer, TP-Link]
+
+logging:
+  level: INFO
+  path: logs/application.log
+  errors_path: logs/errors.csv
+  max_bytes: 1048576      # rotate the log after 1 MB
+  backup_count: 3

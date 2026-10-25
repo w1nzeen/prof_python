@@ -56,10 +56,22 @@ Demo mode of laboratory work 1 (no input required):
 python -m equipment_manager.main --demo
 ```
 
+Laboratory work 7 (database persistence: SQLite, SQLAlchemy, Alembic):
+
+```
+python -m equipment_manager.main --db              # demo on a fresh data/demo.db
+python -m equipment_manager.main --db --db-path my.db   # (the file is recreated)
+alembic upgrade head                               # create equipment.db with migrations
+alembic current                                    # 0002 (head)
+alembic downgrade -1                               # undo "add device location"
+alembic check                                      # models and migrations are in sync
+python -m pytest -m integration -v                 # integration tests (separate test DB)
+```
+
 Laboratory work 6 (automated tests):
 
 ```
-python -m pytest                                   # whole suite (419 test cases)
+python -m pytest                                   # whole suite (497 test cases)
 python -m pytest -m integration                    # integration tests only
 python -m pytest --cov --cov-report=term-missing   # coverage with missing lines
 python -m pytest --cov --cov-report=html           # htmlcov/index.html
@@ -134,7 +146,9 @@ src/equipment_manager/main.py        Application entry point
 src/equipment_manager/streaming/     Streaming pipeline (lab 3)
 src/equipment_manager/domain/        Typed OOP model, DI, services (lab 4)
 src/equipment_manager/importer/      Reliable import/export, YAML config (lab 5)
+src/equipment_manager/persistence/   SQLite persistence layer (lab 7)
 config.yaml                          Importer configuration (lab 5)
+alembic.ini, migrations/             Alembic configuration and migrations (lab 7)
 experiments/                         Type-checking experiment (lab 4)
 scripts/check.py                     CI-like check: ruff, mypy, pytest
 data/input.csv                       Sample input for lab 3
@@ -247,6 +261,52 @@ rotating application log; own exception hierarchy with exception chaining.
 pytest suite: fixtures (factory, yield, parametrized, autouse), parametrization,
 `pytest.raises`, `approx`, `tmp_path`, `monkeypatch`, Mock/autospec, Fake,
 AsyncMock, Hypothesis, integration tests; branch coverage with a 90 % threshold.
+
+## Laboratory work 7: databases (SQLite, SQLAlchemy, Alembic)
+
+The project of lab 1 keeps its features; the data now lives in SQLite.
+Architecture: `main.py` -> service layer -> repositories -> SQLAlchemy ORM -> SQLite.
+
+### Database schema (one-to-many)
+
+| Table | Column | Type | Constraints |
+| --- | --- | --- | --- |
+| `manufacturers` | `id` | INTEGER | PRIMARY KEY |
+| | `name` | VARCHAR(100) | NOT NULL, UNIQUE (case-insensitive) |
+| `devices` | `id` | INTEGER | PRIMARY KEY |
+| | `inventory_number` | VARCHAR(50) | NOT NULL, UNIQUE (case-insensitive) |
+| | `device_type`, `model` | VARCHAR | NOT NULL |
+| | `cost` | FLOAT | NOT NULL, CHECK (cost >= 0) |
+| | `manufacturer_id` | INTEGER | NOT NULL, FOREIGN KEY -> `manufacturers.id` ON DELETE RESTRICT |
+| | `location` | VARCHAR(100) | NULL (added by migration `0002`) |
+
+| Module (`persistence/`) | Content |
+| --- | --- |
+| `models.py` | ORM models `ManufacturerModel`, `DeviceModel`, `relationship()`, constraints |
+| `database.py` | engine (with `PRAGMA foreign_keys=ON`), session factory, `init_db` |
+| `repositories.py` | `ManufacturerRepository`, `DeviceRepository`: CRUD, search, JOIN, `SUM`/`AVG`/`COUNT`/`GROUP BY` |
+| `services.py` | `EquipmentService`: use cases, **transactions** (`commit` / `rollback`) |
+| `dbapi.py` | plain `sqlite3` (DB-API): parameterized search, `UPDATE` with commit/rollback |
+| `demo.py` | console demonstration (`--db`) |
+
+Transaction: `register_devices_batch()` registers many devices as one unit.
+If any device fails (e.g. a duplicate `inventory_number`), the whole batch,
+including manufacturers created by it, is rolled back.
+
+| ACID property | How it is provided |
+| --- | --- |
+| Atomicity | the batch is one transaction: `commit()` only after the last device, otherwise `rollback()` |
+| Consistency | UNIQUE, CHECK, FOREIGN KEY and NOT NULL constraints are enforced by the database |
+| Isolation | other sessions do not see uncommitted (flushed) rows; checked by a test |
+| Durability | after `commit()` the data is in the file; checked with a new engine |
+
+Repositories never call `commit()`: the service layer owns the transaction
+boundary, so several repository calls can be one atomic operation.
+
+Migrations: `0001` creates both tables, `0002` adds `devices.location`
+(`upgrade` and `downgrade`). The demo and the tests build the schema with
+`create_all`; a database created with `alembic upgrade head` should be managed
+only by Alembic.
 
 ## Author
 

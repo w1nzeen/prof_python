@@ -11,6 +11,7 @@ from equipment_manager.decorators import OPERATION_HISTORY
 from equipment_manager.domain.demo import run_oop_demo, run_oop_experiments
 from equipment_manager.exceptions import EquipmentError
 from equipment_manager.models import Device
+from equipment_manager.persistence.demo import run_database_demo
 from equipment_manager.services import (
     add_device,
     calculate_average_cost,
@@ -297,6 +298,13 @@ def main() -> None:
         help="DI and inheritance vs composition experiments (lab 4)",
     )
     parser.add_argument(
+        "--db", action="store_true", help="laboratory work 7 demo (SQLite)"
+    )
+    parser.add_argument(
+        "--db-path", type=Path, default=Path("data/demo.db"),
+        help="database file recreated by --db",
+    )
+    parser.add_argument(
         "--path", type=Path, default=Path("data/input.csv"),
         help="input CSV file for --stream",
     )
@@ -321,7 +329,9 @@ def main() -> None:
     if args.verbose:
         logging.basicConfig(level=logging.DEBUG, format="%(name)s: %(message)s")
 
-    if args.oop:
+    if args.db:
+        run_database_demo(args.db_path)
+    elif args.oop:
         run_oop_demo()
     elif args.oop_experiments:
         run_oop_experiments()

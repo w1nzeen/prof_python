@@ -4,12 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "equipment-manager"
-version = "0.6.0"
-description = "Computer equipment accounting laboratory project"
+version = "0.7.0"
+description = "Computer equipment accounting laboratory project (with database persistence)"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "pyyaml>=6.0",
+    "sqlalchemy>=2.0",
+    "alembic>=1.13",
 ]
 
 [project.optional-dependencies]

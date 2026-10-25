@@ -7,7 +7,10 @@ from typing import Any
 from unittest.mock import Mock, create_autospec
 
 import pytest
+from sqlalchemy import Engine
+from sqlalchemy.orm import Session, sessionmaker
 
+from equipment_manager.data import DEVICES
 from equipment_manager.domain.models import (
     Computer,
     Device,
@@ -19,6 +22,14 @@ from equipment_manager.domain.models import (
 from equipment_manager.domain.protocols import Notifier
 from equipment_manager.domain.repositories import InMemoryRepository
 from equipment_manager.domain.value_objects import InventoryNumber, Money
+from equipment_manager.models import Device as DeviceRecord
+from equipment_manager.persistence.database import (
+    create_db_engine,
+    create_session_factory,
+    init_db,
+    sqlite_url,
+)
+from equipment_manager.persistence.services import EquipmentService
 
 FIXED_TODAY = date(2026, 10, 15)
 
@@ -206,3 +217,49 @@ def csv_writer(tmp_path: Path) -> Callable[[str, str], Path]:
 
     return write
 
+
+# ----- Laboratory work 7: separate SQLite test database -----------------------
+# Every test gets its own SQLite *file* in pytest's tmp_path, so tests never
+# touch the real database and cannot influence each other.
+
+
+@pytest.fixture
+def db_path(tmp_path: Path) -> Path:
+    return tmp_path / "test_equipment.db"
+
+
+@pytest.fixture
+def engine(db_path: Path) -> Iterator[Engine]:
+    engine = create_db_engine(sqlite_url(db_path))
+    init_db(engine)
+    yield engine
+    engine.dispose()
+
+
+@pytest.fixture
+def session_factory(engine: Engine) -> sessionmaker[Session]:
+    return create_session_factory(engine)
+
+
+@pytest.fixture
+def session(session_factory: sessionmaker[Session]) -> Iterator[Session]:
+    with session_factory() as session:
+        yield session
+
+
+@pytest.fixture
+def service(session: Session) -> EquipmentService:
+    return EquipmentService(session)
+
+
+@pytest.fixture
+def seeded(service: EquipmentService) -> EquipmentService:
+    """Service over a database that already holds the 12 devices of lab 2."""
+    service.register_devices_batch(DEVICES)
+
+    return service
+
+
+@pytest.fixture
+def laptop() -> DeviceRecord:
+    return DeviceRecord("PC-100", "Laptop", "Acer", "Swift 3", 25000.0)

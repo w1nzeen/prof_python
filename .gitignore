@@ -20,3 +20,5 @@ htmlcov/
 .coverage
 .coverage.*
 .hypothesis/
+*.db
+*.sqlite3

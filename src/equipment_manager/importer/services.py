@@ -105,6 +105,7 @@ def run_import(
     rules = ValidationRules.from_lists(
         config.processing.allowed_types,
         config.processing.allowed_manufacturers,
+        config.processing.allowed_statuses,
     )
     used_importer = importer or get_importer(
         config.input.path, config.input.format

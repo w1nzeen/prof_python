@@ -17,6 +17,7 @@ processing:
   minimum_value: 0        # records cheaper than this are filtered out
   allowed_types: [Laptop, Monitor, Printer, Router, Server, Keyboard]
   allowed_manufacturers: [Lenovo, Dell, HP, Asus, Acer, TP-Link]
+  allowed_statuses: [in_use, in_storage, in_repair, decommissioned]
 
 logging:
   level: INFO

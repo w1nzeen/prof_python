@@ -14,6 +14,7 @@ SUPPORTED_VERSION = 1
 INPUT_FORMATS = ("auto", "csv", "json", "jsonl")
 OUTPUT_FORMATS = ("auto", "json", "jsonl")
 LOG_LEVELS = ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
+DEFAULT_STATUSES = ("in_use", "in_storage", "in_repair", "decommissioned")
 
 T = TypeVar("T")
 
@@ -38,6 +39,7 @@ class ProcessingConfig:
     minimum_value: float
     allowed_types: tuple[str, ...]
     allowed_manufacturers: tuple[str, ...]
+    allowed_statuses: tuple[str, ...] = DEFAULT_STATUSES
 
 
 @dataclass(frozen=True)
@@ -239,6 +241,11 @@ def load_config(
             allowed_manufacturers=_string_list(
                 processing, "allowed_manufacturers", "processing"
             ),
+            allowed_statuses=(
+                _string_list(processing, "allowed_statuses", "processing")
+                if processing.get("allowed_statuses") is not None
+                else DEFAULT_STATUSES
+            ),
         ),
         logging=LoggingConfig(
             level=str(_get(log_data, "level", str, "logging", "INFO")).upper(),
@@ -286,6 +293,9 @@ def validate_config(config: AppConfig) -> None:
 
     if not config.processing.allowed_manufacturers:
         raise ConfigurationError("allowed_manufacturers must not be empty")
+
+    if not config.processing.allowed_statuses:
+        raise ConfigurationError("allowed_statuses must not be empty")
 
     if config.logging.level not in LOG_LEVELS:
         raise ConfigurationError(f"Unknown log level: {config.logging.level}")

@@ -1,16 +1,20 @@
 """Application layer: use cases built from injected dependencies."""
 
+import logging
 from datetime import date
 
 from equipment_manager.domain.dto import InventoryReport
 from equipment_manager.domain.models import (
     Device,
+    DeviceStatus,
     InventoryRegistry,
     MaintenanceRecord,
 )
 from equipment_manager.domain.policies import MaintenancePolicy
 from equipment_manager.domain.protocols import Notifier, ReportFormatter
 from equipment_manager.domain.value_objects import NumberLike
+
+logger = logging.getLogger(__name__)
 
 
 class MaintenanceService:
@@ -29,7 +33,12 @@ class MaintenanceService:
         self._recipient = recipient
 
     def due_devices(self, today: date) -> list[Device]:
-        return [d for d in self._registry if self._policy.is_due(d, today)]
+        return [
+            d
+            for d in self._registry
+            if d.status is not DeviceStatus.DECOMMISSIONED
+            and self._policy.is_due(d, today)
+        ]
 
     def notify_due(self, today: date) -> int:
         devices = self.due_devices(today)
@@ -53,10 +62,14 @@ class MaintenanceService:
         device = self._registry[number]
         record = MaintenanceRecord(performed_on, description, technician)
         device.record_maintenance(record)
-        self._notifier.send(
-            self._recipient,
-            f"Maintenance done for {device.inventory_number}: {description}",
-        )
+
+        try:
+            self._notifier.send(
+                self._recipient,
+                f"Maintenance done for {device.inventory_number}: {description}",
+            )
+        except Exception as error:  # noqa: BLE001 - the work is done, keep it
+            logger.warning("Notification failed: %s", error)
 
         return record
 

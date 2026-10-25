@@ -12,7 +12,7 @@ from equipment_manager.domain.exceptions import (
 )
 
 CENT = Decimal("0.01")
-INVENTORY_PATTERN = re.compile(r"^[A-Z]{1,5}-\d{1,9}$")
+INVENTORY_PATTERN = re.compile(r"^[A-Z]{1,5}-[0-9]{1,9}$")
 
 
 @total_ordering
@@ -35,8 +35,12 @@ class Money:
         if len(currency) != 3 or not currency.isalpha():
             raise InvalidValueError(f"Invalid currency: {self.currency!r}")
 
+        try:
+            rounded = self.amount.quantize(CENT, rounding=ROUND_HALF_UP)
+        except InvalidOperation as error:
+            raise InvalidValueError("Money amount is too large") from error
+
         # frozen dataclass: normalization needs object.__setattr__
-        rounded = self.amount.quantize(CENT, rounding=ROUND_HALF_UP)
         object.__setattr__(self, "amount", rounded)
         object.__setattr__(self, "currency", currency)
 

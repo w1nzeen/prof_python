@@ -11,6 +11,9 @@ FIELDS: tuple[str, ...] = (
     "value",
 )
 
+DEFAULT_STATUS = "in_use"
+STATUS_FIELD = "status"  # optional column
+
 # key used by readers when a CSV row has more cells than the header
 EXTRA_FIELDS_KEY = "__extra_fields__"
 
@@ -32,6 +35,7 @@ class EquipmentRecord:
     manufacturer: str
     model: str
     value: float
+    status: str = DEFAULT_STATUS
 
     def to_dict(self) -> dict[str, object]:
         return asdict(self)

@@ -25,3 +25,11 @@ class DeviceNotFoundError(DomainError, LookupError):
 
 class MaintenanceError(DomainError):
     """A maintenance operation is not allowed."""
+
+
+class InvalidStatusTransitionError(DomainError):
+    """The requested device status change is not allowed."""
+
+
+class InventorySyncError(DomainError):
+    """The external inventory provider failed."""

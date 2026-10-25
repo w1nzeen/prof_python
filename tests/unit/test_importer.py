@@ -64,7 +64,7 @@ from equipment_manager.importer.validators import (
 
 RULES = ValidationRules.from_lists(exp.TYPES, exp.MANUFACTURERS)
 HEADER = ",".join(exp.HEADER)
-PROJECT = Path(__file__).resolve().parent.parent
+PROJECT = Path(__file__).resolve().parents[2]
 
 
 def raw(**fields: object) -> RawRecord:

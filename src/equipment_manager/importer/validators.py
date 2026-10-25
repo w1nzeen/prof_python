@@ -7,13 +7,15 @@ from dataclasses import dataclass
 
 from equipment_manager.importer.exceptions import RecordValidationError
 from equipment_manager.importer.models import (
+    DEFAULT_STATUS,
     EXTRA_FIELDS_KEY,
     FIELDS,
+    STATUS_FIELD,
     EquipmentRecord,
     RawRecord,
 )
 
-INVENTORY_PATTERN = re.compile(r"^[A-Z]{1,5}-\d{1,9}$")
+INVENTORY_PATTERN = re.compile(r"^[A-Z]{1,5}-[0-9]{1,9}$")
 MAX_MODEL_LENGTH = 100
 
 
@@ -23,17 +25,20 @@ class ValidationRules:
 
     types: dict[str, str]
     manufacturers: dict[str, str]
+    statuses: dict[str, str]
 
     @classmethod
     def from_lists(
         cls,
         types: Iterable[str],
         manufacturers: Iterable[str],
+        statuses: Iterable[str] = ("in_use", "in_storage", "in_repair", "decommissioned"),
     ) -> "ValidationRules":
         """Map the case-folded name to the canonical spelling."""
         return cls(
             types={item.casefold(): item for item in types},
             manufacturers={item.casefold(): item for item in manufacturers},
+            statuses={item.casefold(): item for item in statuses},
         )
 
 
@@ -77,6 +82,16 @@ def _choice(
         ) from error
 
 
+def _status(raw: RawRecord, rules: ValidationRules) -> str:
+    """The status column is optional; an empty cell means the default."""
+    original = raw.data.get(STATUS_FIELD)
+
+    if original is None or not str(original).strip():
+        return DEFAULT_STATUS
+
+    return _choice(raw, STATUS_FIELD, rules.statuses)
+
+
 def _value(raw: RawRecord) -> float:
     original = raw.data.get("value")
     text = _text(raw, "value")
@@ -90,6 +105,10 @@ def _value(raw: RawRecord) -> float:
         )
 
     try:
+        # float() also accepts "1_000" and non-ASCII digits: reject them
+        if not text.isascii() or "_" in text:
+            raise ValueError("only plain ASCII numbers are allowed")
+
         number = float(text.replace(",", "."))
     except ValueError as error:
         raise RecordValidationError(
@@ -153,4 +172,5 @@ def validate_record(raw: RawRecord, rules: ValidationRules) -> EquipmentRecord:
         manufacturer=manufacturer,
         model=model,
         value=_value(raw),
+        status=_status(raw, rules),
     )

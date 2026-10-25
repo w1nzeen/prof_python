@@ -8,6 +8,7 @@ from equipment_manager.domain.exceptions import InvalidValueError
 from equipment_manager.domain.models import (
     Computer,
     Device,
+    DeviceStatus,
     Manufacturer,
     Printer,
     PrintTechnology,
@@ -25,6 +26,7 @@ class BasePayload(TypedDict):
     purchased_on: str
     currency: NotRequired[str]
     country: NotRequired[str]
+    status: NotRequired[str]
 
 
 class GenericPayload(BasePayload):
@@ -57,6 +59,7 @@ def device_from_payload(payload: DevicePayload) -> Device:
         )
         cost = Money.of(payload["cost"], payload.get("currency", "UAH"))
         purchased_on = date.fromisoformat(payload["purchased_on"])
+        status = DeviceStatus(payload.get("status", DeviceStatus.IN_USE.value))
 
         if payload["kind"] == "computer":
             return Computer(
@@ -68,6 +71,7 @@ def device_from_payload(payload: DevicePayload) -> Device:
                 cpu=payload["cpu"],
                 ram_gb=payload["ram_gb"],
                 storage_gb=payload["storage_gb"],
+                status=status,
             )
 
         if payload["kind"] == "printer":
@@ -79,6 +83,7 @@ def device_from_payload(payload: DevicePayload) -> Device:
                 purchased_on=purchased_on,
                 technology=PrintTechnology(payload["technology"]),
                 pages_per_minute=payload["pages_per_minute"],
+                status=status,
             )
 
         return Device(
@@ -87,6 +92,7 @@ def device_from_payload(payload: DevicePayload) -> Device:
             model=payload["model"],
             cost=cost,
             purchased_on=purchased_on,
+            status=status,
         )
     except InvalidValueError:
         raise
@@ -102,6 +108,7 @@ def device_to_payload(device: Device) -> DevicePayload:
     cost = float(device.cost.amount)
     currency = device.cost.currency
     purchased_on = device.purchased_on.isoformat()
+    status = device.status.value
 
     if isinstance(device, Computer):
         return {
@@ -113,6 +120,7 @@ def device_to_payload(device: Device) -> DevicePayload:
             "cost": cost,
             "currency": currency,
             "purchased_on": purchased_on,
+            "status": status,
             "cpu": device.cpu,
             "ram_gb": device.ram_gb,
             "storage_gb": device.storage_gb,
@@ -128,6 +136,7 @@ def device_to_payload(device: Device) -> DevicePayload:
             "cost": cost,
             "currency": currency,
             "purchased_on": purchased_on,
+            "status": status,
             "technology": device.technology.value,
             "pages_per_minute": device.pages_per_minute,
         }
@@ -141,6 +150,7 @@ def device_to_payload(device: Device) -> DevicePayload:
         "cost": cost,
         "currency": currency,
         "purchased_on": purchased_on,
+        "status": status,
     }
 
 

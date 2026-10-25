@@ -16,3 +16,7 @@ logs/
 output/
 *.tmp
 *.bak
+htmlcov/
+.coverage
+.coverage.*
+.hypothesis/

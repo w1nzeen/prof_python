@@ -34,7 +34,7 @@ from equipment_manager.streaming.transformations import (
     with_running_total,
 )
 
-SAMPLE = Path(__file__).resolve().parent.parent / "data" / "input.csv"
+SAMPLE = Path(__file__).resolve().parents[2] / "data" / "input.csv"
 
 
 @pytest.fixture

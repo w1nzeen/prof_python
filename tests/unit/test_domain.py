@@ -241,7 +241,7 @@ def test_payload_round_trip() -> None:
     for payload in sample_payloads():
         device = device_from_payload(payload)
         assert device_to_payload(device) == {
-            "country": "USA", "currency": "UAH", **payload,
+            "country": "USA", "currency": "UAH", "status": "in_use", **payload,
         }
 
     for device in sample_devices():

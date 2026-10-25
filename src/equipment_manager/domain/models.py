@@ -8,6 +8,7 @@ from typing import ClassVar, TypeVar
 
 from equipment_manager.domain.exceptions import (
     DeviceNotFoundError,
+    InvalidStatusTransitionError,
     InvalidValueError,
     MaintenanceError,
 )
@@ -39,6 +40,39 @@ class Manufacturer:
 
     def __str__(self) -> str:
         return self.name
+
+
+class DeviceStatus(str, Enum):
+    IN_USE = "in_use"
+    IN_STORAGE = "in_storage"
+    IN_REPAIR = "in_repair"
+    DECOMMISSIONED = "decommissioned"
+
+
+ALLOWED_TRANSITIONS: dict[DeviceStatus, frozenset[DeviceStatus]] = {
+    DeviceStatus.IN_USE: frozenset(
+        {
+            DeviceStatus.IN_STORAGE,
+            DeviceStatus.IN_REPAIR,
+            DeviceStatus.DECOMMISSIONED,
+        }
+    ),
+    DeviceStatus.IN_STORAGE: frozenset(
+        {
+            DeviceStatus.IN_USE,
+            DeviceStatus.IN_REPAIR,
+            DeviceStatus.DECOMMISSIONED,
+        }
+    ),
+    DeviceStatus.IN_REPAIR: frozenset(
+        {
+            DeviceStatus.IN_USE,
+            DeviceStatus.IN_STORAGE,
+            DeviceStatus.DECOMMISSIONED,
+        }
+    ),
+    DeviceStatus.DECOMMISSIONED: frozenset(),
+}
 
 
 class PrintTechnology(str, Enum):
@@ -74,6 +108,7 @@ class Device:
         model: str,
         cost: Money,
         purchased_on: date,
+        status: DeviceStatus = DeviceStatus.IN_USE,
     ) -> None:
         if not model.strip():
             raise InvalidValueError("Model must not be empty")
@@ -83,6 +118,7 @@ class Device:
         self.model = model.strip()
         self._cost = cost
         self._purchased_on = purchased_on
+        self._status = DeviceStatus(status)
         self._maintenance_log: list[MaintenanceRecord] = []
 
     @property
@@ -107,6 +143,20 @@ class Device:
             raise InvalidValueError("Currency of a device cannot change")
 
         self._cost = value
+
+    @property
+    def status(self) -> DeviceStatus:
+        return self._status
+
+    def change_status(self, new_status: DeviceStatus) -> None:
+        """Move the device to another status if the transition is allowed."""
+        if new_status not in ALLOWED_TRANSITIONS[self._status]:
+            raise InvalidStatusTransitionError(
+                f"Cannot change status from {self._status.value} "
+                f"to {new_status.value}"
+            )
+
+        self._status = new_status
 
     @property
     def full_name(self) -> str:
@@ -171,6 +221,7 @@ class Computer(Device):
         cpu: str,
         ram_gb: int,
         storage_gb: int,
+        status: DeviceStatus = DeviceStatus.IN_USE,
     ) -> None:
         super().__init__(
             inventory_number=inventory_number,
@@ -178,6 +229,7 @@ class Computer(Device):
             model=model,
             cost=cost,
             purchased_on=purchased_on,
+            status=status,
         )
 
         if ram_gb <= 0 or storage_gb <= 0:
@@ -209,6 +261,7 @@ class Printer(Device):
         purchased_on: date,
         technology: PrintTechnology,
         pages_per_minute: int,
+        status: DeviceStatus = DeviceStatus.IN_USE,
     ) -> None:
         super().__init__(
             inventory_number=inventory_number,
@@ -216,6 +269,7 @@ class Printer(Device):
             model=model,
             cost=cost,
             purchased_on=purchased_on,
+            status=status,
         )
 
         if pages_per_minute <= 0:
@@ -278,6 +332,9 @@ class InventoryRegistry:
 
     def by_manufacturer(self, name: str) -> list[Device]:
         return [d for d in self if d.manufacturer.matches(name)]
+
+    def by_status(self, status: DeviceStatus) -> list[Device]:
+        return [d for d in self if d.status == status]
 
     def by_type(self, device_type: type[D]) -> list[D]:
         """Bound TypeVar keeps the precise type: list[Computer]."""

@@ -56,6 +56,17 @@ Demo mode of laboratory work 1 (no input required):
 python -m equipment_manager.main --demo
 ```
 
+Laboratory work 6 (automated tests):
+
+```
+python -m pytest                                   # whole suite (419 test cases)
+python -m pytest -m integration                    # integration tests only
+python -m pytest --cov --cov-report=term-missing   # coverage with missing lines
+python -m pytest --cov --cov-report=html           # htmlcov/index.html
+python scripts/check.py                            # ruff + mypy + pytest + coverage
+python -m pytest experiments/lab6/test_exp1_weak_vs_strong.py   # experiments
+```
+
 Laboratory work 5 (reliable import/export, configuration):
 
 ```
@@ -128,7 +139,8 @@ experiments/                         Type-checking experiment (lab 4)
 scripts/check.py                     CI-like check: ruff, mypy, pytest
 data/input.csv                       Sample input for lab 3
 reports/                             Reports in .docx format
-tests/                               Unit tests
+tests/unit, tests/integration          Test suite (lab 6), conftest.py with fixtures
+experiments/lab6/                    Weak/flaky/coverage test experiments
 ```
 
 ## Laboratory work 2: data structures
@@ -229,6 +241,12 @@ Static typing: `mypy --strict` (see `[tool.mypy]` in `pyproject.toml`).
 CSV (streaming) -> validation -> strict/tolerant policy -> JSON export with
 atomic write; YAML configuration with fail-fast validation; error CSV and
 rotating application log; own exception hierarchy with exception chaining.
+
+## Laboratory work 6: automated testing
+
+pytest suite: fixtures (factory, yield, parametrized, autouse), parametrization,
+`pytest.raises`, `approx`, `tmp_path`, `monkeypatch`, Mock/autospec, Fake,
+AsyncMock, Hypothesis, integration tests; branch coverage with a 90 % threshold.
 
 ## Author
 

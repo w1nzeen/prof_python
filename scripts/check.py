@@ -9,7 +9,7 @@ import sys
 STEPS: list[tuple[str, list[str]]] = [
     ("ruff", [sys.executable, "-m", "ruff", "check", "src", "tests"]),
     ("mypy (strict)", [sys.executable, "-m", "mypy", "src", "tests"]),
-    ("pytest", [sys.executable, "-m", "pytest", "-q"]),
+    ("pytest + coverage", [sys.executable, "-m", "pytest", "-q", "--cov", "--cov-report=term"]),
 ]
 
 

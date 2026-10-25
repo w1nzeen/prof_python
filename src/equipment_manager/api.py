@@ -327,3 +327,8 @@ async def batch_fetch_devices(
         ) from error
 
     return [DeviceResponse.model_validate(payload) for payload in payloads]
+
+@app.get("/health")
+async def health() -> dict[str, str]:
+    """Return the lightweight container health response."""
+    return {"status": "ok"}
